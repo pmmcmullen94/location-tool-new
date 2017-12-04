@@ -1,607 +1,600 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heat Map Data</title>    
+    <style>
+        body {
+            font-family: sans-serif;
+        }
 
-   <title>Heat Map Data</title>
+        h1 {
+            position: absolute;
+            background: white;
+            padding: 5px;
+        }
 
-  <h2 style="top: 5px; left: 450px; position: absolute;">Soofa Map Tool</h2>
+        /*   Important for leaflet map  */
+        .leaflet-container {
+            background: rgba(0,0,0,.8) !important;
+        }
 
+        /* Css for checkboxes */
+        .multiselect {
+            width: 200px;
+        }
 
-  <style>
- 
+        .selectBox {
+            position: absolute;
+        }
 
+            .selectBox select {
+                width: 100%;
+            }
 
-    body { font-family:sans-serif; }
+        .overSelect {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }
 
-    h1 { position:absolute; background:white; padding:5px;}
-    
-/*   Important for leaflet map  */  
-.leaflet-container {                                            
-      background: rgba(0,0,0,.8) !important;
-    } 
+        #checkboxes {
+            display: none;
+            border: 1px #dadada solid;
+            font-weight: 100;
+        }
 
-    
-/* Css for checkboxes */  
-.multiselect {
-  width: 200px;
-}
+            #checkboxes label {
+                display: block;
+            }
 
-.selectBox {
-  position: absolute;
-}
-
-.selectBox select {
-  width: 100%;
-}
-
-.overSelect {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-}
-
-#checkboxes {
-  display: none;
-  border: 1px #dadada solid;
-  font-weight:100;
-}
-
-#checkboxes label {
-
-
-
-  display: block;
-}
-
-/*Css for 'averge score' button*/
-.scoredisplay {
-    background-color: #f44336;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-}
+        /*Css for 'averge score' button*/
+        .scoredisplay {
+            background-color: #f44336;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
 
 
-/*Css for warning box*/
+        /*Css for warning box*/
 
-.danger {
-    background-color: #ffdddd;
-    border-left: 6px solid #f44336;
-    width: 400px;
-    position:absolute;
-    top: 450px;
-    left: 725px;
-}
- </style>
+        .danger {
+            background-color: #ffdddd;
+            border-left: 6px solid #f44336;
+            width: 400px;
+            position: absolute;
+            top: 450px;
+            left: 725px;
+        }
+    </style>
+    <!-- Dependancies and external javascript code -->
+    <!-- This is for the map view (leaflet.js) -->
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <style>
+        .leaflet-zoom-hide {
+            position: absolute !important;
+        }
+    </style>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <!--   This is for heatmap.js. (Must be in the same folder. If not, change the path!) -->
+    <script src="heatmap.js"></script>
+    <script src="leaflet-heatmap.js"></script>
+    <!-- Set up Google Maps Javascript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdsGq2g7EJPonPoSutU98iQKL-9W3odG8&libraries=places" type="text/javascript"></script>
+
+
+    <script>
+        /// Default Values for heatmap
+
+        var googlefoodData = { max: 0, data: [] };
+        var googlecommunityData = { max: 0, data: [] };
+        var googlebigshopsData = { max: 0, data: [] };
+        var googlesmallshopsData = { max: 0, data: [] };
+        var googletransitData = { max: 0, data: [] };
+        var googletouristData = { max: 0, data: [] };
+
+        var yelpfoodData = { max: 0, data: [] };
+        var yelpshoppingData = { max: 0, data: [] };
+        var yelpcommunityData = { max: 0, data: [] };
+
+        var walkscoreData = { max: 0, data: [] };
+        var averageData = { max: 0, data: [] };
+        var compositeData = { max: 0, data: [] };
+        var markercontainer = new Array();
+
+        var layersactive = [];
+
+    </script>
+
+    <!--  Default  Data File -->
+    <script src="DataFiles/SoofaDataCambridge.js"></script>
+</head>
 
 <body>
+    <h2 style="top: 5px; left: 450px; position: absolute;">Soofa Map Tool</h2>
+
+    <!-- Dropdown menu for cities. This is where you add a new city!  -->
+    <form style="position:absolute; top: 75px; left: 450px;">
+        <select id="selectcity">
+            <option value="default">Pick a City!</option>
+            <option value="Cambridge">Cambridge, MA</option>
+            <option value="Providence">Providence, RI</option>
+            <option value="Trenton">Trenton, NJ</option>
+            <option value="Cuero">Cuero, TX</option>
+            <option value="Portage">Portage, MI</option>
+            <option value="Lafayette">Lafayette, LA</option>
+            <option value="ArlingtonHeights">Arlington Heights, IL</option>
+        </select>
+    </form>    
+
+    <!-- Set up score displays -->
+    <div style="position:absolute; top: 105px; height: 500px; width: 700px;" class="heatmap" id="map"></div>
 
+    <button class="scoredisplay" style="position:absolute; top: 30px; left: 975px; background-color: #2554C7" id="scorebutton">Show More Scores</button>
 
-<!-- Dropdown menu for cities. This is where you add a new city!  -->
-<form style="position:absolute; top: 75px; left: 450px;" >
-    <select  id="selectcity">
-        <option value="default">Pick a City!</option>
-        <option value="Cambridge">Cambridge, MA</option>
-        <option value="Providence">Providence, RI</option>
-        <option value="Trenton">Trenton, NJ</option>
-        <option value="Cuero">Cuero, TX</option>
-        <option value="Portage">Portage, MI</option>
-        <option value="Lafayette">Lafayette, LA</option>
-        <option value="ArlingtonHeights">Arlington Heights, IL</option>
-    </select>
-</form>
+    <form id='scoresform' style="visibility: hidden; ">
+        <label style="position:absolute; top: 125px; left: 750px;" for="googlefood">Google Food Score:</label>
+        <input style="position:absolute; top: 125px; left: 950px; width: 50px;" id="googlefood" type="text" readonly />
+        <label style="position:absolute; top: 155px; left: 750px;" for="googlecommunity">Google Community Score:</label>
+        <input style="position:absolute; top: 155px; left: 950px; width: 50px;" id="googlecommunity" type="text" readonly />
+        <label style="position:absolute; top: 185px; left: 750px;" for="googlebigshops">Google Big Shops Score:</label>
+        <input style="position:absolute; top: 185px; left: 950px; width: 50px;" id="googlebigshops" type="text" readonly />
+        <label style="position:absolute; top: 215px; left: 750px;" for="googlesmallshops">Google Small Shops Score:</label>
+        <input style="position:absolute; top: 215px; left: 950px; width: 50px;" id="googlesmallshops" type="text" readonly />
 
-<!-- Dependancies and external javascript code -->
+        <label style="position:absolute; top: 245px; left: 750px;" for="googletransit">Google Transit Score:</label>
+        <input style="position:absolute; top: 245px; left: 950px; width: 50px;" id="googletransit" type="text" readonly />
 
-<!-- This is for the map view (leaflet.js) -->
-  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
-  <style> .leaflet-zoom-hide { position: absolute!important; } </style>
-  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+        <label style="position:absolute; top: 275px; left: 750px;" for="googletransit">Google Tourist Score:</label>
+        <input style="position:absolute; top: 275px; left: 950px; width: 50px;" id="googletourist" type="text" readonly />
 
-<!--   This is for heatmap.js. (Must be in the same folder. If not, change the path!) -->
-  <script src="heatmap.js"></script>
-  <script src="leaflet-heatmap.js"></script>
+        <label style="position:absolute; top: 305px; left: 750px;" for="yelpfood">Yelp Food Score:</label>
+        <input style="position:absolute; top: 305px; left: 950px; width: 50px;" id="yelpfood" type="text" readonly />
 
+        <label style="position:absolute; top: 335px; left: 750px;" for="yelpshopping">Yelp Shopping Score:</label>
+        <input style="position:absolute; top: 335px; left: 950px; width: 50px;" id="yelpshopping" type="text" readonly />
 
-  <!-- Set up Google Maps Javascript API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdsGq2g7EJPonPoSutU98iQKL-9W3odG8&libraries=places"
-  type="text/javascript"></script>
+        <label style="position:absolute; top: 365px; left: 750px;" for="yelpcommunity">Yelp Community Score:</label>
+        <input style="position:absolute; top: 365px; left: 950px; width: 50px;" id="yelpcommunity" type="text" readonly />
 
 
-  <script>
+        <label style="position:absolute; top: 395px; left: 750px;" for="walkscore">Walking Score:</label>
+        <input style="position:absolute; top: 395px; left: 950px; width: 50px;" id="walkscore" type="text" readonly />
 
- /// Default Values for heatmap
 
-  var googlefoodData = {max: 0, data: []};
-  var googlecommunityData = {max: 0, data: []};
-  var googlebigshopsData = {max: 0, data: []};
-  var googlesmallshopsData = {max: 0, data: []};
-  var googletransitData = {max: 0, data: []};
-  var googletouristData = {max: 0, data: []};
+        <label style="position:absolute; top: 425px; left: 750px;" for="address">Address:</label>
+        <input style="position:absolute; top: 425px; left: 825px; width: 300px;" id="address" type="text" readonly />
+    </form>
 
-  var yelpfoodData = {max: 0, data: []};
-  var yelpshoppingData = {max: 0, data: []};
-  var yelpcommunityData= {max: 0, data: []};
 
-  var walkscoreData = {max: 0, data: []};
-  var averageData = {max: 0, data: []};
-  var compositeData = {max: 0, data: []};
-  var markercontainer = new Array();
+    <form>
+        <label class="scoredisplay" style="position:absolute; top: 30px; left: 750px;" for="average">Average Score:</label>
+        <input style="position:absolute; top: 30px; left: 900px; width: 50px; height: 30px; font-size: 14px " id="average" type="text" readonly />
+    </form>
 
-  var layersactive = [];
+    <script>
+        //// Google Reverse Geocodeing Setup (for address display) ////
+        var geocoder = new google.maps.Geocoder;
 
+        function geocodeLatLng(geocoder, lat, lng) {
+            var latlng = { lat: lat, lng: lng };
+            geocoder.geocode({ 'location': latlng }, function (results, status) {
+                if (status === 'OK') {
+                    if (results[1]) {
+                        document.getElementById('address').value = results[0].formatted_address;
+                    } else {
+                        document.getElementById('address').value = 'No results found';
+                    }
+                } else {
+                    document.getElementById('address').value = 'Geocoder failed due to: ' + status;
+                }
+            });
+        }
 
-  </script>
+        /////////////// Base Map Setup /////////////////////////////
+        var baseLayer = L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+                maxZoom: 18
+            }
+        );
 
+        var map = new L.Map(document.getElementById('map'), {
+            center: new L.LatLng(42.3736, - 71.1097),
+            zoom: 13,
+            layers: [baseLayer]
 
+        });
 
+        map.on('click', onMapClick);
 
 
-  <!--  Default  Data File -->   
-  <script src="DataFiles/SoofaDataCambridge.js"></script>  
 
+        var baseMaps = {
+            "Map View": baseLayer
+        };
 
-<!-- Set up score displays -->
 
-<div style="position:absolute; top: 105px; height: 500px; width: 700px;" class="heatmap" id="map" ></div>
+        /// Marker customization, chnage iconUrl if you want a different looking marker ///
 
-<button class = "scoredisplay" style="position:absolute; top: 30px; left: 975px; background-color: #2554C7"  id="scorebutton">Show More Scores</button>
+        // var soofaIcon = L.icon({
+        //     iconUrl: iconimage in png format,
 
-<form id = 'scoresform' style="visibility: hidden; ">
-    <label style="position:absolute; top: 125px; left: 750px;" for="googlefood">Google Food Score:</label>
-    <input style="position:absolute; top: 125px; left: 950px; width: 50px;" id="googlefood" type="text" readonly />
-    <label style="position:absolute; top: 155px; left: 750px;" for="googlecommunity">Google Community Score:</label>
-    <input style="position:absolute; top: 155px; left: 950px; width: 50px;" id="googlecommunity" type="text" readonly/>
-    <label style="position:absolute; top: 185px; left: 750px;" for="googlebigshops">Google Big Shops Score:</label>
-    <input style="position:absolute; top: 185px; left: 950px; width: 50px;" id="googlebigshops" type="text" readonly/>
-    <label style="position:absolute; top: 215px; left: 750px;" for="googlesmallshops">Google Small Shops Score:</label>
-    <input style="position:absolute; top: 215px; left: 950px; width: 50px;" id="googlesmallshops" type="text" readonly/>
+        //     iconSize:     [38, 95], // size of the icon
+        //     shadowSize:   [50, 64], // size of the shadow
+        //     iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+        //     shadowAnchor: [4, 62],  // the same for the shadow
+        //     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+        // });
 
-    <label style="position:absolute; top: 245px; left: 750px;" for="googletransit">Google Transit Score:</label>
-    <input style="position:absolute; top: 245px; left: 950px; width: 50px;" id="googletransit" type="text" readonly/>
 
-    <label style="position:absolute; top: 275px; left: 750px;" for="googletransit">Google Tourist Score:</label>
-    <input style="position:absolute; top: 275px; left: 950px; width: 50px;" id="googletourist" type="text" readonly/>
+        /// Add Markers to Map on click, plus change scores when marker is dragged///
 
-    <label style="position:absolute; top: 305px; left: 750px;" for="yelpfood">Yelp Food Score:</label>
-    <input style="position:absolute; top: 305px; left: 950px; width: 50px;" id="yelpfood" type="text" readonly/>
+        function onMapClick(e) {
+            marker = new L.marker(e.latlng, { draggable: 'true' });
+            marker.on('click', markerOnClick);
+            markercontainer.push(marker);
 
-    <label style="position:absolute; top: 335px; left: 750px;" for="yelpshopping">Yelp Shopping Score:</label>
-    <input style="position:absolute; top: 335px; left: 950px; width: 50px;" id="yelpshopping" type="text" readonly/>
 
-    <label style="position:absolute; top: 365px; left: 750px;" for="yelpcommunity">Yelp Community Score:</label>
-    <input style="position:absolute; top: 365px; left: 950px; width: 50px;" id="yelpcommunity" type="text" readonly/>
+            for (var name in AllScores) {
+                document.getElementById(name).value = calculatescore(marker.getLatLng().lat, marker.getLatLng().lng, AllScores[name]);
+            }
 
+            var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
 
-    <label style="position:absolute; top: 395px; left: 750px;" for="walkscore">Walking Score:</label>
-    <input style="position:absolute; top: 395px; left: 950px; width: 50px;" id="walkscore" type="text" readonly/>
+            marker.addTo(map)
+            map.panTo(marker.getLatLng());
 
+            marker.on('dragend', function (event) {
+                var marker = event.target;
+                var position = marker.getLatLng();
+                marker.setLatLng(new L.LatLng(position.lat, position.lng), { draggable: 'true' });
+                var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
+                marker.addTo(map)
 
-    <label style="position:absolute; top: 425px; left: 750px;" for="address">Address:</label>
-    <input style="position:absolute; top: 425px; left: 825px; width: 300px;" id="address" type="text" readonly/>
-</form>
 
+                for (var name in AllScores) {
+                    document.getElementById(name).value = calculatescore(marker.getLatLng().lat, marker.getLatLng().lng, AllScores[name]);
+                }
 
-<form> 
-    <label class = "scoredisplay" style="position:absolute; top: 30px; left: 750px;" for="average">Average Score:</label>
-    <input style="position:absolute; top: 30px; left: 900px; width: 50px; height: 30px; font-size: 14px " id="average" type="text" readonly/>
-</form>
- 
-  <script>
+                var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
 
-//// Google Reverse Geocodeing Setup (for address display) ////
-var geocoder = new google.maps.Geocoder;
 
-function geocodeLatLng(geocoder, lat, lng) {
-  var latlng = {lat: lat, lng: lng};
-  geocoder.geocode({'location': latlng}, function(results, status) {
-    if (status === 'OK') {
-      if (results[1]) {
-            document.getElementById('address').value = results[0].formatted_address;
-      } else {
-            document.getElementById('address').value = 'No results found';
-      }
-    } else {
-      document.getElementById('address').value = 'Geocoder failed due to: ' + status;
-    }
-  });
-}
+                map.panTo(new L.LatLng(position.lat, position.lng))
 
-/////////////// Base Map Setup /////////////////////////////
+            });
 
+            map.addLayer(marker);
 
-var baseLayer = L.tileLayer(
-  'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
-    maxZoom: 18
-  }
-  );
+        };
 
-var map = new L.Map(document.getElementById('map'), {
-  center: new L.LatLng(42.3736, - 71.1097),
-  zoom: 13,
-  layers: [baseLayer]
+        /// Update scores on click ///
+        function markerOnClick(e) {
+            for (var name in AllScores) {
+                document.getElementById(name).value = calculatescore(e.latlng.lat, e.latlng.lng, AllScores[name]);
+            }
 
-});
+            var currlocation = geocodeLatLng(geocoder, e.latlng.lat, e.latlng.lng);
 
-map.on('click', onMapClick);
+            map.panTo(new L.LatLng(e.latlng.lat, e.latlng.lng));
+        }
 
 
 
-var baseMaps = {
-  "Map View": baseLayer
-};
 
+        /// Heatmap Specifications ///
 
-/// Marker customization, chnage iconUrl if you want a different looking marker ///
 
-// var soofaIcon = L.icon({
-//     iconUrl: iconimage in png format,
+        /// If you want to have different colors, put this: gradient: {'.5': 'blue', '.8': 'red', '.95': 'white'}
 
-//     iconSize:     [38, 95], // size of the icon
-//     shadowSize:   [50, 64], // size of the shadow
-//     iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
-//     shadowAnchor: [4, 62],  // the same for the shadow
-//     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
-// });
+        var cfg1 = { "radius": .007, "maxOpacity": .8, "scaleRadius": true, "useLocalExtrema": true, latField: 'lat', lngField: 'lng', valueField: 'count', "blur": .8 };
 
+        var compositelayer = new HeatmapOverlay(cfg1);
 
-/// Add Markers to Map on click, plus change scores when marker is dragged///
 
-function onMapClick(e) {
-  marker = new L.marker(e.latlng, {draggable:'true'});
-  marker.on('click', markerOnClick);
-  markercontainer.push(marker);
+        /// Set Data ///
 
 
-  for (var name in AllScores){
-    document.getElementById(name).value = calculatescore(marker.getLatLng().lat,marker.getLatLng().lng, AllScores[name]);
-  }
+        compositelayer.setData({ max: 0, data: [] });
 
-  var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
 
-  marker.addTo(map)
-  map.panTo(marker.getLatLng());
+        // /// Create Map Layers ///
 
-  marker.on('dragend', function(event){
-    var marker = event.target;
-    var position = marker.getLatLng();
-    marker.setLatLng(new L.LatLng(position.lat, position.lng),{draggable:'true'});
-    var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
-    marker.addTo(map)
+        var compositegroup = L.layerGroup([compositelayer]);
 
 
-  for (var name in AllScores){
-    document.getElementById(name).value = calculatescore(marker.getLatLng().lat,marker.getLatLng().lng, AllScores[name]);
-  }    
+        /// Add Layers to Map ///
 
-    var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
+        map.addLayer(compositegroup);
 
 
-    map.panTo(new L.LatLng(position.lat, position.lng))
+        //// Scoring Section ////
 
-  });
+        /// Get Scores of Closest Location ///
+        function closestscore(lat, lng, arr) {
 
-  map.addLayer(marker);
+            var bestlat = arr[0].lat;
+            var bestlng = arr[0].lng;
+            var bestdist = Math.pow(Math.abs(lat - bestlat), 2) + Math.pow(Math.abs(lng - bestlng), 2);
+            var bestindex = 0;
 
-};
-
-/// Update scores on click ///
-function markerOnClick(e)
-{
-   for (var name in AllScores){
-    document.getElementById(name).value = calculatescore(e.latlng.lat,e.latlng.lng, AllScores[name]); 
-  }
-
-  var currlocation = geocodeLatLng(geocoder, e.latlng.lat, e.latlng.lng);
-
-  map.panTo(new L.LatLng(e.latlng.lat, e.latlng.lng));
-}
-
-
-
-
-/// Heatmap Specifications ///
-
-
-/// If you want to have different colors, put this: gradient: {'.5': 'blue', '.8': 'red', '.95': 'white'}
-
-var cfg1 = {"radius": .007, "maxOpacity": .8, "scaleRadius": true, "useLocalExtrema": true, latField: 'lat', lngField: 'lng', valueField: 'count',  "blur": .8 };
-
-var compositelayer = new HeatmapOverlay(cfg1);
-
-
-/// Set Data ///
-
-
-compositelayer.setData({max: 0, data:[]});
-
-
-// /// Create Map Layers ///
-
-var compositegroup = L.layerGroup([compositelayer]);
-
-
-/// Add Layers to Map ///
-
-map.addLayer(compositegroup);
-
-
-//// Scoring Section ////
-
-/// Get Scores of Closest Location ///
-function closestscore (lat, lng, arr) {
-
-              var bestlat = arr[0].lat;
-              var bestlng = arr[0].lng;
-              var bestdist = Math.pow(Math.abs(lat - bestlat), 2) + Math.pow(Math.abs(lng - bestlng), 2);
-              var bestindex = 0;
-
-              for (i = 1; i < arr.length; i++){
+            for (i = 1; i < arr.length; i++) {
                 currlat = arr[i].lat;
                 currlng = arr[i].lng;
                 currdist = Math.pow(Math.abs(lat - currlat), 2) + Math.pow(Math.abs(lng - currlng), 2);
-                if (currdist < bestdist){
-                  bestlat = currlat;
-                  bestlng = currlng;
-                  bestindex = i;
-                  bestdist = currdist;
+                if (currdist < bestdist) {
+                    bestlat = currlat;
+                    bestlng = currlng;
+                    bestindex = i;
+                    bestdist = currdist;
                 }
-              }
-              return arr[bestindex].count
+            }
+            return arr[bestindex].count
+        }
+
+        /// Return scores between 0 and 10 ///
+
+        function calculatescore(lat, lng, heatmapdata) {
+            score = closestscore(lat, lng, heatmapdata.data);
+            return Math.round(1000 * score / heatmapdata.max) / 100; // Returns two decimal places
+        }
+
+    </script>
+
+    <!-- Code for changing cities, resets all values and markers  -->
+    <script type="text/javascript">
+        document.getElementById('selectcity').onchange = function () {
+            var myScript = document.createElement('script');
+            myScript.setAttribute('src', 'DataFiles/SoofaData' + this.value.split(" ")[0] + '.js');
+            document.head.appendChild(myScript);
+            myScript.onload = function () {
+                compositelayer.setData({ max: 0, data: [] });
+                document.getElementById("layerselector").reset();
+                map.panTo(new L.LatLng(lat, lng));
+                for (var i = 0; i < markercontainer.length; i++) {
+                    map.removeLayer(markercontainer[i]);
+                };
+                markercontainer = [];
+                layersactive = [];
+                map.removeLayer(rect);
+                rect = L.rectangle([northeastcoord, southwestcoord], { dashArray: "10", color: "#4d4d4d", opacity: .8, fillOpacity: 0 });
+                map.addLayer(rect);
+                for (var name in AllScores) {
+                    document.getElementById(name).value = "";
+                }
+                document.getElementById('address').value = "";
+            };
+
+        }
+
+
+        /// Function for adding multiple heatmaps together ///
+
+        function layertrigger(keyword) {
+            index = layersactive.indexOf(keyword);
+            if (index > -1) {
+                layersactive.splice(index, 1);
+            } else {
+                layersactive.push(keyword);
+            }
+            if (layersactive.length > 0) {
+                var newdata = clone(AllScores[layersactive[0]].data);
+                for (var j = 1; j < layersactive.length; j++) {
+                    var adder = clone(AllScores[layersactive[j]].data);
+                    for (var i = 0; i < newdata.length; i++) {
+                        newdata[i].count = newdata[i].count + adder[i].count;
+                    }
+                }
+
+                compositelayer.setData({ max: 1000, data: newdata });
             }
 
-/// Return scores between 0 and 10 ///
-
-function calculatescore(lat, lng, heatmapdata){
-  score = closestscore(lat, lng, heatmapdata.data);
-  return Math.round(1000*score/heatmapdata.max)/100; // Returns two decimal places
-}
-
- </script>
-
-<!-- Code for changing cities, resets all values and markers  -->
- <script type="text/javascript">
-  document.getElementById('selectcity').onchange = function(){
-    var myScript = document.createElement('script');
-    myScript.setAttribute('src', 'DataFiles/SoofaData' + this.value.split(" ")[0] + '.js');
-    document.head.appendChild(myScript);
-    myScript.onload = function() {
-    compositelayer.setData({max:0, data: []});
-    document.getElementById("layerselector").reset();
-    map.panTo(new L.LatLng(lat, lng)); 
-    for (var i = 0; i < markercontainer.length; i++){
-      map.removeLayer(markercontainer[i]);
-    };
-    markercontainer = [];
-    layersactive = [];
-    map.removeLayer(rect);
-    rect = L.rectangle([northeastcoord, southwestcoord], { dashArray: "10", color: "#4d4d4d",  opacity: .8,  fillOpacity: 0});
-    map.addLayer(rect);
-    for (var name in AllScores){
-    document.getElementById(name).value = "";
-  }
-    document.getElementById('address').value = "";
-    };
-
-}
-
-
-/// Function for adding multiple heatmaps together ///
-
-function layertrigger(keyword){
-    index = layersactive.indexOf(keyword);
-    if (index > -1){
-      layersactive.splice(index, 1);
-    } else{
-      layersactive.push(keyword);
-    }
-    if (layersactive.length > 0){
-      var newdata = clone(AllScores[layersactive[0]].data);
-      for (var j = 1; j < layersactive.length; j++){
-        var adder = clone(AllScores[layersactive[j]].data);
-        for (var i = 0; i < newdata.length; i++){
-          newdata[i].count = newdata[i].count + adder[i].count;
+            else {
+                compositelayer.setData({ max: 0, data: [] });
+            }
         }
-      }
-
-      compositelayer.setData({max:1000, data: newdata}); 
-    }
-
-    else{
-      compositelayer.setData({max: 0, data: []});
-    }
-  }
 
 
-/// Function to clone a javascript object ///
+        /// Function to clone a javascript object ///
 
-function clone(obj) {
-    // Handle the 3 simple types, and null or undefined
-    if (null == obj || "object" != typeof obj) return obj;
+        function clone(obj) {
+            // Handle the 3 simple types, and null or undefined
+            if (null == obj || "object" != typeof obj) return obj;
 
-    // Handle Date
-    if (obj instanceof Date) {
-        var copy = new Date();
-        copy.setTime(obj.getTime());
-        return copy;
-    }
+            // Handle Date
+            if (obj instanceof Date) {
+                var copy = new Date();
+                copy.setTime(obj.getTime());
+                return copy;
+            }
 
-    // Handle Array
-    if (obj instanceof Array) {
-        var copy = [];
-        for (var i = 0, len = obj.length; i < len; i++) {
-            copy[i] = clone(obj[i]);
+            // Handle Array
+            if (obj instanceof Array) {
+                var copy = [];
+                for (var i = 0, len = obj.length; i < len; i++) {
+                    copy[i] = clone(obj[i]);
+                }
+                return copy;
+            }
+
+            // Handle Object
+            if (obj instanceof Object) {
+                var copy = {};
+                for (var attr in obj) {
+                    if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+                }
+                return copy;
+            }
+
+            throw new Error("Unable to copy obj! Its type isn't supported.");
         }
-        return copy;
-    }
 
-    // Handle Object
-    if (obj instanceof Object) {
-        var copy = {};
-        for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+
+
+    </script>
+
+
+    <!-- Dropdown menu for multiple heatmap layers  -->
+    <form id="layerselector" style="position:absolute; top: 75px; left: 750px;">
+        <div class="multiselect">
+            <div class="selectBox" onclick="showCheckboxes()">
+                <select>
+                    <option>Pick Heatmap Layers!</option>
+                </select>
+                <div class="overSelect"></div>
+            </div>
+            <div id="checkboxes">
+                <label style="background-color:white; padding-top: 20px">
+                    <input onclick="layertrigger('googlefood');" type="checkbox" />Google Food Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('googlecommunity');" type="checkbox" />Google Community Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('googlebigshops');" type="checkbox" />Google BigShops Data
+                </label>
+
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('googlesmallshops');" type="checkbox" />Google SmallShops Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('googletransit');" type="checkbox" />Google Transit Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('googletourist');" type="checkbox" />Google Tourist Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('yelpfood');" type="checkbox" />Yelp Food Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('yelpshopping');" type="checkbox" />Yelp Shopping Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('yelpcommunity');" type="checkbox" />Yelp Community Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="layertrigger('walkscore');" type="checkbox" />Walk Score Data
+                </label>
+
+                <label style="background-color:white;">
+                    <input onclick="for (key in AllScores){ if (key != 'average'){layertrigger(key)}};" type="checkbox" />Show All Layers
+                </label>
+
+            </div>
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        var expanded = false;
+
+        function showCheckboxes() {
+            var checkboxes = document.getElementById("checkboxes");
+            if (!expanded) {
+                checkboxes.style.display = "block";
+                expanded = true;
+            } else {
+                checkboxes.style.display = "none";
+                expanded = false;
+            }
         }
-        return copy;
-    }
-
-    throw new Error("Unable to copy obj! Its type isn't supported.");
-}
 
 
+    </script>
 
-</script>
-
-
-<!-- Dropdown menu for multiple heatmap layers  -->
-<form id = "layerselector" style="position:absolute; top: 75px; left: 750px;">
-  <div class="multiselect">
-    <div class="selectBox" onclick="showCheckboxes()">
-      <select>
-        <option>Pick Heatmap Layers!</option>
-      </select>
-      <div class="overSelect"></div>
+    <!-- Google Searchbox -->
+    <div>
+        <input style="position:absolute; top: 70px; width: 400px; height:20px; border-style: groove; " type="text" id="mapsearch" placeholder="Enter Location for Marker">
     </div>
-    <div id="checkboxes">
-      <label style="background-color:white; padding-top: 20px" >
-      <input onclick = "layertrigger('googlefood');" type="checkbox" />Google Food Data</label>
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('googlecommunity');" type="checkbox"/>Google Community Data</label>
+    <script>
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('googlebigshops');" type="checkbox" />Google BigShops Data</label>
+        /// Code for Searchbox adding marker ///
+
+        var searchBox = new google.maps.places.SearchBox(document.getElementById('mapsearch'));
+        google.maps.event.addListener(searchBox, 'places_changed', function () {
+
+            for (var i = 0; i < searchBox.getPlaces().length; i++) {
+
+                marker = new L.marker([searchBox.getPlaces()[i].geometry.location.lat(), searchBox.getPlaces()[i].geometry.location.lng()], { draggable: 'true' });
+                marker.on('click', markerOnClick);
+                markercontainer.push(marker);
+
+                for (var name in AllScores) {
+                    document.getElementById(name).value = calculatescore(marker.getLatLng().lat, marker.getLatLng().lng, AllScores[name]);
+                }
+
+                var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
+
+                marker.addTo(map)
+                map.panTo(marker.getLatLng());
+
+                marker.on('dragend', function (event) {
+                    var marker = event.target;
+                    var position = marker.getLatLng();
+                    marker.setLatLng(new L.LatLng(position.lat, position.lng), { draggable: 'true' });
+                    var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
+                    marker.addTo(map)
 
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('googlesmallshops');" type="checkbox"  />Google SmallShops Data</label>
+                    for (var name in AllScores) {
+                        document.getElementById(name).value = calculatescore(marker.getLatLng().lat, marker.getLatLng().lng, AllScores[name]);
+                    }
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('googletransit');" type="checkbox" />Google Transit Data</label>
+                    document.getElementById('address').value = searchBox.getPlaces()[0].address;
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('googletourist');" type="checkbox" />Google Tourist Data</label>
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('yelpfood');" type="checkbox"/>Yelp Food Data</label>
+                    map.panTo(new L.LatLng(position.lat, position.lng))
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('yelpshopping');" type="checkbox" />Yelp Shopping Data</label>
+                });
+                map.addLayer(marker);
+            }
 
-     <label style="background-color:white;">
-      <input onclick = "layertrigger('yelpcommunity');" type="checkbox" />Yelp Community Data</label>
+        });
 
-      <label style="background-color:white;">
-      <input onclick = "layertrigger('walkscore');" type="checkbox" />Walk Score Data</label>
+        /// Code for Showing/Hiding Scores ///
 
-      <label style="background-color:white;">
-      <input onclick = "for (key in AllScores){ if (key != 'average'){layertrigger(key)}};" type="checkbox" />Show All Layers</label>
+        var theButton = document.getElementById('scorebutton');
+        var shown = false;
+        theButton.onclick = function () {
+            if (shown) {
+                document.getElementById('scoresform').style.visibility = 'hidden';
+                shown = !shown;
+            }
+            else {
+                document.getElementById('scoresform').style.visibility = 'visible';
+                shown = !shown;
+            }
+        }
 
+        // Code for Dashed Recntangle //
+
+        var rect = L.rectangle([northeastcoord, southwestcoord], { dashArray: "10", color: "#4d4d4d", opacity: .8, fillOpacity: 0 });
+        map.addLayer(rect);
+
+    </script>
+    <!-- Notification  -->
+
+    <div class="danger">
+        <p> Click on the map to create a draggable marker. Display heatmaps on the map by picking from 'Pick Heatmap Layers!' Change cities by selectin from 'Pick a City.' </p>
+        <p><b>Note:</b> If the heatmaps are not displaying, change your browser's security settings. </p>
     </div>
-  </div>
-</form>
 
-<script type="text/javascript">
-  var expanded = false;
+</body>
 
-function showCheckboxes() {
-  var checkboxes = document.getElementById("checkboxes");
-  if (!expanded) {
-    checkboxes.style.display = "block";
-    expanded = true;
-  } else {
-    checkboxes.style.display = "none";
-    expanded = false;
-  }
-}
-
-
-</script>
-
-<!-- Google Searchbox -->
-<div>
-  <input style="position:absolute; top: 70px; width: 400px; height:20px; border-style: groove; " type="text" id = "mapsearch" placeholder="Enter Location for Marker"> 
-</div>
-
-<script> 
-/// Code for Searchbox adding marker ///
-
-var searchBox = new google.maps.places.SearchBox(document.getElementById('mapsearch'));
-  google.maps.event.addListener(searchBox, 'places_changed', function(){
-
-for (var i = 0; i < searchBox.getPlaces().length; i++){
-
-  marker = new L.marker([searchBox.getPlaces()[i].geometry.location.lat(), searchBox.getPlaces()[i].geometry.location.lng()], {draggable:'true'});
-  marker.on('click', markerOnClick);
-  markercontainer.push(marker);
-
-  for (var name in AllScores){
-    document.getElementById(name).value = calculatescore(marker.getLatLng().lat,marker.getLatLng().lng, AllScores[name]); 
-  }
-
-  var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
-
-  marker.addTo(map)
-  map.panTo(marker.getLatLng());
-
-  marker.on('dragend', function(event){
-    var marker = event.target;
-    var position = marker.getLatLng();
-    marker.setLatLng(new L.LatLng(position.lat, position.lng),{draggable:'true'});
-    var currlocation = geocodeLatLng(geocoder, marker.getLatLng().lat, marker.getLatLng().lng);
-    marker.addTo(map)
-
-
-  for (var name in AllScores){
-    document.getElementById(name).value = calculatescore(marker.getLatLng().lat,marker.getLatLng().lng, AllScores[name]);
-  }    
-
-     document.getElementById('address').value = searchBox.getPlaces()[0].address;
-
-
-    map.panTo(new L.LatLng(position.lat, position.lng))
-
-  });
-  map.addLayer(marker);
-}
-
-  });
-
-/// Code for Showing/Hiding Scores ///
-
-  var theButton = document.getElementById('scorebutton');
-  var shown = false;
-  theButton.onclick = function() { 
-    if (shown){
-        document.getElementById('scoresform').style.visibility='hidden';  
-        shown = !shown; 
-    }
-    else{
-        document.getElementById('scoresform').style.visibility='visible';  
-        shown = !shown;
-    }
-  }
-
-  // Code for Dashed Recntangle //
-
-  var rect = L.rectangle([northeastcoord, southwestcoord], { dashArray: "10", color: "#4d4d4d",  opacity: .8,  fillOpacity: 0});
-  map.addLayer(rect);
-
-</script>
-
-<!-- Notification  -->
-
-<div class="danger">
-  <p> Click on the map to create a draggable marker. Display heatmaps on the map by picking from 'Pick Heatmap Layers!' Change cities by selectin from 'Pick a City.' </p>
-    <p><b>Note:</b> If the heatmaps are not displaying, change your browser's security settings. </p>
-</div>
-
-    </body>
-    </html> 
+</html>
