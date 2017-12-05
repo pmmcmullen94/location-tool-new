@@ -203,8 +203,20 @@ document.getElementById('selectcity').onchange = function () {
 
 
 /// Function for adding multiple heatmaps together ///
-
 function layertrigger(keyword) {
+    //will set all to checked if not all checked already, will uncheck if all checked already. Then iterate over
+    if (keyword == 'all') {
+        $("#layerselector input").prop('unchecked', layersactive.length == Object.keys(AllScores).length - 1);
+
+        for (var name in AllScores) {
+            if (name != 'average')
+                layertrigger(name);
+        }
+
+        return;
+    };
+    
+
     index = layersactive.indexOf(keyword);
     if (index > -1) {
         layersactive.splice(index, 1);
