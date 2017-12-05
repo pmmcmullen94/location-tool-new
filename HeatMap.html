@@ -12,6 +12,9 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdsGq2g7EJPonPoSutU98iQKL-9W3odG8&libraries=places" type="text/javascript"></script>    
     <!--  Default  Data File -->
     <script src="DataFiles/SoofaDataCambridge.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
@@ -38,96 +41,87 @@
             </select>            
         </div>
         <hr />
-        <div class="row" style="display: flex; align-items: center">
+        <div class="row" style="/*display: flex; align-items: center*/">
             <div class="col-xs-12 col-lg-8">
                 <!-- Set up score displays -->
                 <div class="heatmap" style="width: 700px; height: 500px" id="map"></div>
             </div>
             <div class="col-xs-12 col-lg-4">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div class="button-group">
-                            <button type="button" class="btn btn-default btn-block btn-sm dropdown-toggle" data-toggle="dropdown"><span>Pick Heatmap Layers!</span><span class="caret"></span></button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a onclick="layertrigger('googlefood');">
-                                        <input type="checkbox" />Google Food Data
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-
-                    
-
-                    <!-- Dropdown menu for multiple heatmap layers  -->
-                    <!--<form id="layerselector">
-                        <div class="multiselect">
-                            <div class="selectBox" onclick="showCheckboxes()">
-                                <select class="form-control col-xs-12">
-                                    <option>Pick Heatmap Layers!</option>
-                                </select>
-                                <div class="overSelect"></div>
-                            </div>
-                            <div id="checkboxes">
-                                <label style="background-color:white; padding-top: 20px">
-                                    <input onclick="layertrigger('googlefood');" type="checkbox" />Google Food Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('googlecommunity');" type="checkbox" />Google Community Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('googlebigshops');" type="checkbox" />Google BigShops Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('googlesmallshops');" type="checkbox" />Google SmallShops Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('googletransit');" type="checkbox" />Google Transit Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('googletourist');" type="checkbox" />Google Tourist Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('yelpfood');" type="checkbox" />Yelp Food Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('yelpshopping');" type="checkbox" />Yelp Shopping Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('yelpcommunity');" type="checkbox" />Yelp Community Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="layertrigger('walkscore');" type="checkbox" />Walk Score Data
-                                </label>
-
-                                <label style="background-color:white;">
-                                    <input onclick="for (key in AllScores){ if (key != 'average'){layertrigger(key)}};" type="checkbox" />Show All Layers
-                                </label>
-                            </div>
-                        </div>
-                    </form>-->
+                <div class="row">                                        
+                    <button class="btn btn-primary btn-block" type="button" data-toggle="collapse" data-target="#collapseMenu" aria-expanded="false">Pick Heatmap Layers!</button>                                                    
                 </div>
-                <div class="row">
-                    <form>
-                        <label class="scoredisplay" for="average">Average Score:</label>
-                        <input  id="average" type="text" readonly />
-                    </form>       
-                </div>
-                <div class="row">
-                    <button class="scoredisplay" id="scorebutton">Show More Scores</button>
+                <div class="row collapse" id="collapseMenu" style="background-color: white; width: 100%; border: solid 5px; position: absolute; padding: 15px; z-index: 100">
+                    <form class="form-horizontal" id="layerselector">                                                
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <!-- Maybe use this with function and data dash -->
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('googlefood')" />Google Food Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">                                    
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('googlecommunity')" />Google Community Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">                                    
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('googlebigshops')" />Google BigShops Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('googlesmallshops')" />Google SmallShops Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('googletransit')" />Google Transit Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('googletourist')" />Google Tourist Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('yelpfood')" />Yelp Food Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('yelpshopping')" />Yelp Shopping Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('yelpcommunity')" />Yelp Community Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('walkscore')" />Walk Score Data
+                            </label>
+                        </div>                            
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" onchange="layertrigger('all')" />Show All Layers
+                            </label>
+                        </div>                                                    
+                    </form>
                 </div>                
-                <form id='scoresform' style="visibility: hidden;">
+                <form>
+                    <div class="form-group row">
+                        <label for="average" class="col-sm-10 col-form-label">Average Score:</label>
+                        <div class="col-sm-2">
+                            <input type="text" readonly class="form-control-plaintext" id="average" />
+                        </div>
+                    </div>                    
+                </form>                
+                <div class="row">
+                    <button class="btn btn-primary btn-block" type="button" data-toggle="collapse" data-target="#scoresform">Show More Scores</button>
+                </div>                
+                <form id="scoresform" class="collapse">
                     <div class="form-group row">
                         <label for="googlefood" class="col-sm-10 col-form-label">Google Food Score:</label>                       
                         <div class="col-sm-2">

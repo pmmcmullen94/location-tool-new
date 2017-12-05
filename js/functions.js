@@ -284,7 +284,7 @@ google.maps.event.addListener(searchBox, 'places_changed', function () {
     for (var i = 0; i < searchBox.getPlaces().length; i++) {
 
         marker = new L.marker([searchBox.getPlaces()[i].geometry.location.lat(), searchBox.getPlaces()[i].geometry.location.lng()], { draggable: 'true' });
-        marker.on('click', markerOnClick);
+        marker.on('click', markerOnClick);          
         markercontainer.push(marker);
 
         for (var name in AllScores) {
@@ -319,46 +319,12 @@ google.maps.event.addListener(searchBox, 'places_changed', function () {
 
 });
 
-/// Code for Showing/Hiding Scores ///
-
-var theButton = document.getElementById('scorebutton');
-var shown = false;
-theButton.onclick = function () {
-    if (shown) {
-        document.getElementById('scoresform').style.visibility = 'hidden';
-        shown = !shown;
-    }
-    else {
-        document.getElementById('scoresform').style.visibility = 'visible';
-        shown = !shown;
-    }
-}
-
 // Code for Dashed Recntangle //
-
 var rect = L.rectangle([northeastcoord, southwestcoord], { dashArray: "10", color: "#4d4d4d", opacity: .8, fillOpacity: 0 });
 map.addLayer(rect);
 
-
-var layerOptions = [];
-
-$('.dropdown-menu a').on('click', function (event) {
-    alert('hello');
-    //var $target = $(event.currentTarget),
-    //    val = $target.attr('data-value'),
-    //    $inp = $target.find('input'),
-    //    idx;
-
-    //if ((idx = options.indexOf(val)) > -1) {
-    //    options.splice(idx, 1);
-    //    $inp.prop('checked', false);
-    //}
-    //else {
-    //    options.push(val);
-    //    $inp.prop('checked', true);
-    //}
-
-    //$target.blur();
-
-    //return false;
+$(document).click(function (e) {
+    if (!$(e.target).closest("#collapseMenu").length) {
+        $("#collapseMenu").collapse('hide');
+    }
 });
