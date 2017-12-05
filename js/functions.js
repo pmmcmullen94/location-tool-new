@@ -230,7 +230,6 @@ function layertrigger(keyword) {
 
 
 /// Function to clone a javascript object ///
-
 function clone(obj) {
     // Handle the 3 simple types, and null or undefined
     if (null == obj || "object" != typeof obj) return obj;
@@ -263,21 +262,7 @@ function clone(obj) {
     throw new Error("Unable to copy obj! Its type isn't supported.");
 }
 
-var expanded = false;
-
-function showCheckboxes() {
-    var checkboxes = document.getElementById("checkboxes");
-    if (!expanded) {
-        checkboxes.style.display = "block";
-        expanded = true;
-    } else {
-        checkboxes.style.display = "none";
-        expanded = false;
-    }
-}
-
 /// Code for Searchbox adding marker ///
-
 var searchBox = new google.maps.places.SearchBox(document.getElementById('mapsearch'));
 google.maps.event.addListener(searchBox, 'places_changed', function () {
 
@@ -323,6 +308,7 @@ google.maps.event.addListener(searchBox, 'places_changed', function () {
 var rect = L.rectangle([northeastcoord, southwestcoord], { dashArray: "10", color: "#4d4d4d", opacity: .8, fillOpacity: 0 });
 map.addLayer(rect);
 
+// Onclick outside of checkbox dropdown - closes if not a child of element or main element
 $(document).click(function (e) {
     if (!$(e.target).closest("#collapseMenu").length) {
         $("#collapseMenu").collapse('hide');
