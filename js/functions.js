@@ -48,7 +48,7 @@ google.maps.event.addDomListener(window, 'load', initializeMap);
 google.maps.event.addDomListener(window, 'resize', function () {
     var center = map.getCenter();
     google.maps.event.trigger(map, 'resize');
-    map.setCenter(center);
+    map.panTo(center);    
 });
 
 
@@ -177,10 +177,21 @@ document.getElementById('selectcity').onchange = function () {
 
 /// Function for adding multiple heatmaps together ///
 function layertrigger(keyword) {
-    //will set all to checked if not all checked already, will uncheck if all checked already. Then iterate over
-    if (keyword == 'all') {
-        $("#layerselector input").prop('checked', layersactive.length != Object.keys(AllScores).length - 1);
+    var numSelected = $("#layerselector input:checked").length;
 
+    if (keyword == 'all') {
+        var noneSelected = numSelected == 0;
+
+        if (noneSelected) {
+            //Set all to selected
+            $("#layerselector input").prop('checked', true);
+        }
+        else {
+            //Set all to not selected
+            $("#layerselector input").prop('checked', false);
+        }
+
+        //recurse through allscores to trigger
         for (var name in AllScores) {
             if (name != 'average')
                 layertrigger(name);
@@ -211,7 +222,13 @@ function layertrigger(keyword) {
         compositelayer.setData({ max: 0, data: [] });
     }
 
-    $("#selectAllCheckBox").prop('checked', layersactive.length == Object.keys(AllScores).length - 1);
+    if (numSelected == (Object.keys(AllScores).length - 1)) {
+        //All Selected, turn on select all
+        $("#selectAllCheckBox").prop('checked', true);
+    }
+    else {
+        $("#selectAllCheckBox").prop('checked', false);
+    }    
 }
 
 /// Function to clone a javascript object ///
