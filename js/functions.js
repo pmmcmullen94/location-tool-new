@@ -206,7 +206,7 @@ document.getElementById('selectcity').onchange = function () {
 function layertrigger(keyword) {
     //will set all to checked if not all checked already, will uncheck if all checked already. Then iterate over
     if (keyword == 'all') {
-        $("#layerselector input").prop('unchecked', layersactive.length == Object.keys(AllScores).length - 1);
+        $("#layerselector input").prop('checked', layersactive.length != Object.keys(AllScores).length - 1);
 
         for (var name in AllScores) {
             if (name != 'average')
@@ -214,8 +214,7 @@ function layertrigger(keyword) {
         }
 
         return;
-    };
-    
+    }    
 
     index = layersactive.indexOf(keyword);
     if (index > -1) {
@@ -238,6 +237,8 @@ function layertrigger(keyword) {
     else {
         compositelayer.setData({ max: 0, data: [] });
     }
+
+    $("#selectAllCheckBox").prop('checked', layersactive.length != Object.keys(AllScores).length - 1);
 }
 
 
