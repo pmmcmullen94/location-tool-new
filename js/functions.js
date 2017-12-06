@@ -238,7 +238,7 @@ function layertrigger(keyword) {
         compositelayer.setData({ max: 0, data: [] });
     }
 
-    $("#selectAllCheckBox").prop('checked', layersactive.length != Object.keys(AllScores).length - 1);
+    $("#selectAllCheckBox").prop('checked', layersactive.length == Object.keys(AllScores).length - 1);
 }
 
 
