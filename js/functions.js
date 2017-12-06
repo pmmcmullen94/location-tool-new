@@ -159,7 +159,7 @@ document.getElementById('selectcity').onchange = function () {
     */
 
     var myScript = document.createElement('script');
-    myScript.setAttribute('src', 'DataFiles/SoofaData' + this.value.split(" ")[0] + '.js');
+    myScript.setAttribute('src', './DataFiles/SoofaData' + this.value.split(" ")[0] + '.js');
     document.head.appendChild(myScript);
     myScript.onload = function () {
         compositelayer.setData({ max: 0, data: [] });
