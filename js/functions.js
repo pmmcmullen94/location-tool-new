@@ -16,6 +16,7 @@ var compositeData = { max: 0, data: [] };
 var markercontainer = [];
 
 var layersactive = [];
+var map;
 
 //// Google Reverse Geocodeing Setup (for address display) ////
 var geocoder = new google.maps.Geocoder;
@@ -43,19 +44,17 @@ var baseLayer = L.tileLayer(
     }
 );
 
-var map = new L.Map(document.getElementById('map'), {
-    center: new L.LatLng(42.3736, - 71.1097),
-    zoom: 13,
-    layers: [baseLayer]
-
+google.maps.event.addDomListener(window, 'load', initializeMap);
+google.maps.event.addDomListener(window, 'resize', function () {
+    var center = map.getCenter();
+    google.maps.event.trigger(map, 'resize');
+    map.setCenter(center);
 });
 
-map.on('click', onMapClick);
 
 var baseMaps = {
     "Map View": baseLayer
 };
-
 
 /// Marker customization, chnage iconUrl if you want a different looking marker ///
 
@@ -120,31 +119,6 @@ function markerOnClick(e) {
     map.panTo(new L.LatLng(e.latlng.lat, e.latlng.lng));
 }
 
-
-
-
-/// Heatmap Specifications ///
-
-
-/// If you want to have different colors, put this: gradient: {'.5': 'blue', '.8': 'red', '.95': 'white'}
-
-var cfg1 = { "radius": .007, "maxOpacity": .8, "scaleRadius": true, "useLocalExtrema": true, latField: 'lat', lngField: 'lng', valueField: 'count', "blur": .8 };
-
-var compositelayer = new HeatmapOverlay(cfg1);
-
-
-/// Set Data ///
-compositelayer.setData({ max: 0, data: [] });
-
-
-// /// Create Map Layers ///
-var compositegroup = L.layerGroup([compositelayer]);
-
-
-/// Add Layers to Map ///
-map.addLayer(compositegroup);
-
-
 //// Scoring Section ////
 
 /// Get Scores of Closest Location ///
@@ -201,7 +175,6 @@ document.getElementById('selectcity').onchange = function () {
 
 }
 
-
 /// Function for adding multiple heatmaps together ///
 function layertrigger(keyword) {
     //will set all to checked if not all checked already, will uncheck if all checked already. Then iterate over
@@ -240,7 +213,6 @@ function layertrigger(keyword) {
 
     $("#selectAllCheckBox").prop('checked', layersactive.length == Object.keys(AllScores).length - 1);
 }
-
 
 /// Function to clone a javascript object ///
 function clone(obj) {
@@ -317,9 +289,32 @@ google.maps.event.addListener(searchBox, 'places_changed', function () {
 
 });
 
+/// Heatmap Specifications ///
+/// If you want to have different colors, put this: gradient: {'.5': 'blue', '.8': 'red', '.95': 'white'}
+var cfg1 = { "radius": .007, "maxOpacity": .8, "scaleRadius": true, "useLocalExtrema": true, latField: 'lat', lngField: 'lng', valueField: 'count', "blur": .8 };
+
+var compositelayer = new HeatmapOverlay(cfg1);
+
+/// Set Data ///
+compositelayer.setData({ max: 0, data: [] });
+
+// /// Create Map Layers ///
+var compositegroup = L.layerGroup([compositelayer]);
+
 // Code for Dashed Recntangle //
 var rect = L.rectangle([northeastcoord, southwestcoord], { dashArray: "10", color: "#4d4d4d", opacity: .8, fillOpacity: 0 });
-map.addLayer(rect);
+
+function initializeMap() {
+    map = new L.Map(document.getElementById('map'), {
+        center: new L.LatLng(42.3736, - 71.1097),
+        zoom: 13,
+        layers: [baseLayer]
+    });    
+
+    map.on('click', onMapClick);
+    map.addLayer(compositegroup);
+    map.addLayer(rect);
+}
 
 // Onclick outside of checkbox dropdown - closes if not a child of element or main element
 $(document).click(function (e) {
