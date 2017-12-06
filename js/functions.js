@@ -44,6 +44,7 @@ var baseLayer = L.tileLayer(
     }
 );
 
+//Event Listeners for Map Resizing and Initialization
 google.maps.event.addDomListener(window, 'load', initializeMap);
 google.maps.event.addDomListener(window, 'resize', function () {
     var center = map.getCenter();
@@ -144,7 +145,6 @@ function closestscore(lat, lng, arr) {
 }
 
 /// Return scores between 0 and 10 ///
-
 function calculatescore(lat, lng, heatmapdata) {
     score = closestscore(lat, lng, heatmapdata.data);
     return Math.round(1000 * score / heatmapdata.max) / 100; // Returns two decimal places
@@ -152,6 +152,12 @@ function calculatescore(lat, lng, heatmapdata) {
 
 //Code for changing cities, resets all values and markers
 document.getElementById('selectcity').onchange = function () {
+    
+    /*TODO:
+        would be better to just go search for this datafile and, if available, grab the needed element from it
+        something like jquery.load to get the datafile, grab what is needed from it with .then() and push that data array to it's needed objects
+    */
+
     var myScript = document.createElement('script');
     myScript.setAttribute('src', 'DataFiles/SoofaData' + this.value.split(" ")[0] + '.js');
     document.head.appendChild(myScript);
@@ -177,7 +183,7 @@ document.getElementById('selectcity').onchange = function () {
 
 /// Function for adding multiple heatmaps together ///
 function layertrigger(keyword) {
-    var numSelected = $("#layerselector input:checked").length;
+    var numSelected = $("#layerselector input:checked").not("#selectAllCheckBox").length;
 
     if (keyword == 'all') {
         var noneSelected = numSelected == 0;
@@ -201,6 +207,7 @@ function layertrigger(keyword) {
     }    
 
     index = layersactive.indexOf(keyword);
+
     if (index > -1) {
         layersactive.splice(index, 1);
     } else {
@@ -303,7 +310,6 @@ google.maps.event.addListener(searchBox, 'places_changed', function () {
         });
         map.addLayer(marker);
     }
-
 });
 
 /// Heatmap Specifications ///
